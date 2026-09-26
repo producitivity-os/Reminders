@@ -1,0 +1,1 @@
+{"default":{"identifier":"default","description":"Capability for Reminders","local":true,"windows":["main"],"permissions":["core:default","core:window:allow-close","core:window:allow-set-badge-count","core:window:allow-start-dragging","clipboard-manager:allow-read-image","clipboard-manager:allow-write-image"]}}
