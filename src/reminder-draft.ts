@@ -1,6 +1,7 @@
 export type ReminderDraftSelection =
   | { type: "view"; id: string }
-  | { type: "project"; id: string };
+  | { type: "project"; id: string }
+  | { type: "day-plan"; id: string };
 
 export function defaultReminderDueAt(
   selection: ReminderDraftSelection,
@@ -16,4 +17,3 @@ export function defaultReminderDueAt(
   today.setHours(0, 0, 0, 0);
   return today.getTime();
 }
-

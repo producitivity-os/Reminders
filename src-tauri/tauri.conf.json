@@ -13,9 +13,9 @@
     "windows": [
       {
         "title": "Reminders",
-        "width": 600,
+        "width": 760,
         "height": 720,
-        "minWidth": 420,
+        "minWidth": 560,
         "minHeight": 480,
         "resizable": true,
         "decorations": true,
@@ -32,6 +32,10 @@
     }
   },
   "bundle": {
+    "iOS": {
+      "minimumSystemVersion": "15.0",
+      "developmentTeam": "A44TG8C84Y"
+    },
     "active": true,
     "targets": [
       "dmg"

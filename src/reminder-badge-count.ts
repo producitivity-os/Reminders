@@ -18,3 +18,15 @@ export function countRemindersDueByToday(
       reminder.dueAt < tomorrowStart,
   ).length;
 }
+
+export function countScheduledReminders(
+  reminders: readonly Reminder[],
+): number {
+  return reminders.filter(
+    (reminder) =>
+      reminder.completedAt === null &&
+      reminder.deletedAt === null &&
+      reminder.dueAt !== null &&
+      Number.isFinite(reminder.dueAt),
+  ).length;
+}

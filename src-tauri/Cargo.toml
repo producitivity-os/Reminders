@@ -15,6 +15,10 @@ tauri-build = { version = "2", features = [] }
 app-core = { path = "../../../../crates/core" }
 app-config = { path = "../../../../crates/config" }
 data-client = { path = "../../../../crates/client" }
+desktop-menu = { path = "../../../../crates/desktop-menu" }
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
 serde = { version = "1", features = ["derive"] }
-tauri = { version = "2", features = [] }
+serde_json = "1"
+tauri = { version = "2", features = ["tray-icon"] }
 tauri-plugin-clipboard-manager = "2"
+tauri-plugin-notification = "2"

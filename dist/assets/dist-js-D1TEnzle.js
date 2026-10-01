@@ -1,0 +1,1 @@
+import{i as e}from"./core-DTOuZZnR.js";import{n as t,t as n}from"./index-DVDpBuXI.js";async function r(n){await e(`plugin:clipboard-manager|write_image`,{image:t(n)})}async function i(){return await e(`plugin:clipboard-manager|read_image`).then(e=>new n(e))}export{i as readImage,r as writeImage};

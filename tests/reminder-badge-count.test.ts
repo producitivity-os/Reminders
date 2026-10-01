@@ -1,7 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import type { Reminder } from "../src/api.ts";
-import { countRemindersDueByToday } from "../src/reminder-badge-count.ts";
+import {
+  countRemindersDueByToday,
+  countScheduledReminders,
+} from "../src/reminder-badge-count.ts";
 
 function reminder(
   id: string,
@@ -58,5 +61,20 @@ test("the badge uses local calendar boundaries", () => {
       now,
     ),
     1,
+  );
+});
+
+test("the scheduled badge counts every active reminder with a date", () => {
+  const now = new Date(2026, 8, 22, 12).getTime();
+  assert.equal(
+    countScheduledReminders([
+      reminder("overdue", new Date(2026, 8, 20).getTime()),
+      reminder("today", now),
+      reminder("future", new Date(2026, 9, 1).getTime()),
+      reminder("unscheduled", null),
+      reminder("completed", now, { completedAt: now }),
+      reminder("deleted", now, { deletedAt: now }),
+    ]),
+    3,
   );
 });

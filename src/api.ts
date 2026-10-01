@@ -1,10 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
+import { isDueWithinWindow } from "./reminder-due-state";
 
 export type ReminderView =
   "today" | "scheduled" | "all" | "completed" | "deleted";
 export type ReminderPriority = "none" | "low" | "medium" | "high";
 export type ReminderProject = { id: string; title: string };
 export type CreateReminderProjectInput = { id: string; title: string };
+export type UpdateReminderProjectInput = { id: string; title: string };
 export type ReminderSubtask = {
   id: string;
   title: string;
@@ -115,14 +117,49 @@ export const remindersApi = {
     const state = browserState();
     const saved = { id: input.id, title: input.title.trim() };
     state.projects.push(saved);
-    state.projects.sort((left, right) => left.title.localeCompare(right.title));
     writeBrowser(state);
     return saved;
+  },
+  async updateProject(
+    input: UpdateReminderProjectInput,
+  ): Promise<ReminderProject> {
+    if (isTauri) return invoke("update_reminder_project", { input });
+    const state = browserState();
+    const index = state.projects.findIndex((project) => project.id === input.id);
+    if (index < 0) throw new Error("The project no longer exists.");
+    const saved = { ...state.projects[index], title: input.title.trim() };
+    state.projects[index] = saved;
+    writeBrowser(state);
+    return saved;
+  },
+  async deleteProject(id: string): Promise<boolean> {
+    if (isTauri) return invoke("delete_reminder_project", { id });
+    const state = browserState();
+    const before = state.projects.length;
+    state.projects = state.projects.filter((project) => project.id !== id);
+    state.reminders = state.reminders.map((reminder) =>
+      reminder.projectId === id ? { ...reminder, projectId: null } : reminder,
+    );
+    writeBrowser(state);
+    return before !== state.projects.length;
+  },
+  async reorderProjects(orderedIds: string[]): Promise<ReminderProject[]> {
+    if (isTauri) return invoke("reorder_reminder_projects", { orderedIds });
+    const state = browserState();
+    const byId = new Map(state.projects.map((project) => [project.id, project]));
+    if (
+      orderedIds.length !== state.projects.length ||
+      new Set(orderedIds).size !== orderedIds.length ||
+      orderedIds.some((id) => !byId.has(id))
+    )
+      throw new Error("Project order is invalid.");
+    state.projects = orderedIds.map((id) => byId.get(id)!);
+    writeBrowser(state);
+    return state.projects;
   },
   async reminders(query: ReminderQuery): Promise<Reminder[]> {
     if (isTauri) return invoke("list_reminders", { query });
     const state = browserState();
-    const now = Date.now();
     return state.reminders
       .filter((item) => {
         if (query.listId && item.listId !== query.listId) return false;
@@ -133,11 +170,7 @@ export const remindersApi = {
         if (item.completedAt !== null) return false;
         if (query.view === "scheduled") return item.dueAt !== null;
         if (query.view === "today")
-          return (
-            item.dueAt !== null &&
-            item.dueAt >= (query.dayStart ?? now) &&
-            item.dueAt < (query.dayEnd ?? now)
-          );
+          return isDueWithinWindow(item.dueAt, query.dayStart, query.dayEnd);
         return true;
       })
       .sort((a, b) => a.sortIndex - b.sortIndex || a.createdAt - b.createdAt);
